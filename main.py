@@ -46,3 +46,12 @@ def transform(data: RequestData):
         return {"result": result}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+import os
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/")
+def read_root():
+    return FileResponse(os.path.join("static", "index.html"))
