@@ -54,4 +54,5 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 def read_root():
-    return FileResponse(os.path.join("static", "index.html"))
+return
+FileResponse(os.path.join("static","index.html"))
