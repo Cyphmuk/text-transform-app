@@ -39,11 +39,14 @@
   <h3>Result:</h3>
   <div id="output">Your result will appear here...</div>
 
-  <script>
-    async function transform(mode) {
-      const input = document.getElementById("inputText").value;
+ <script>
+  const API_URL = "https://ulyencrypt.onrender.com/transform";
 
-      const response = await fetch("http://127.0.0.1:8000/transform", {
+  async function transform(mode) {
+    const input = document.getElementById("inputText").value;
+
+    try {
+      const response = await fetch(API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -52,8 +55,11 @@
       });
 
       const data = await response.json();
-      document.getElementById("output").textContent = data.result || "Error: " + data.detail;
+      document.getElementById("output").textContent = data.result || ("Error: " + data.detail);
+    } catch (error) {
+      document.getElementById("output").textContent = "Network error: " + error;
     }
-  </script>
-</body>
-</html>
+  }
+</script>
+
+
