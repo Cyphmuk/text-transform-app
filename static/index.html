@@ -31,11 +31,11 @@
       max-width: 700px;
     }
 
-    textarea {
+    textarea, input[type="text"] {
       width: 100%;
-      height: 100px;
       margin-bottom: 20px;
       font-size: 16px;
+      padding: 10px;
     }
 
     button {
@@ -66,6 +66,10 @@
     .tick.show {
       opacity: 1;
     }
+
+    label {
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -76,6 +80,9 @@
   </p>
 
   <h2>Text Encryptor / Decryptor</h2>
+
+  <label for="encryptionKey">Encryption Key:</label>
+  <input type="text" id="encryptionKey" placeholder="Enter your 32-byte Fernet key"><br>
 
   <textarea id="inputText" placeholder="Enter your text here..."></textarea><br>
 
@@ -92,6 +99,12 @@
 
     async function transform(mode) {
       const input = document.getElementById("inputText").value;
+      const key = document.getElementById("encryptionKey").value.trim();
+
+      if (!key) {
+        alert("Please enter your encryption key.");
+        return;
+      }
 
       try {
         const response = await fetch(API_URL, {
@@ -99,7 +112,7 @@
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ text: input, mode: mode })
+          body: JSON.stringify({ text: input, mode: mode, key: key })
         });
 
         const data = await response.json();
@@ -115,9 +128,7 @@
         .then(() => {
           const tick = document.getElementById("copyTick");
           tick.classList.add("show");
-          setTimeout(() => {
-            tick.classList.remove("show");
-          }, 1500);
+          setTimeout(() => tick.classList.remove("show"), 1500);
         })
         .catch(() => alert("Failed to copy result."));
     }
