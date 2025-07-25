@@ -9,7 +9,7 @@ import os
 
 app = FastAPI()
 
-# CORS for frontend access
+# Enable CORS for frontend access
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,20 +18,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve static frontend
+# Serve static frontend files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 def read_root():
     return FileResponse(os.path.join("static", "index.html"))
 
-# Pydantic model
+# Request model for encryption/decryption
 class RequestData(BaseModel):
     text: str
     mode: str  # "encrypt" or "decrypt"
-    key: str   # user-provided Fernet key (base64 32-byte)
+    key: str   # Fernet key (base64-encoded 32-byte)
 
-# Helper: Validate and get Fernet object
+# Optional: backend-generated Fernet key
+@app.get("/generate-key")
+def generate_key():
+    return {"key": Fernet.generate_key().decode()}
+
+# Helper: Validate and create Fernet object from key
 def get_fernet(key: str):
     try:
         key_bytes = base64.urlsafe_b64decode(key)
@@ -41,6 +46,7 @@ def get_fernet(key: str):
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid Fernet key. Must be a base64-encoded 32-byte string.")
 
+# Encrypt or decrypt text
 @app.post("/transform")
 def transform(data: RequestData):
     fernet = get_fernet(data.key)

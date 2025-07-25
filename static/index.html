@@ -83,10 +83,15 @@
   <label for="keyInput"><strong>Enter your secret key (Fernet format):</strong></label>
   <input type="text" id="keyInput" placeholder="Paste your Fernet key here..." />
 
+  <button onclick="generateKey()">Generate Key</button>
+  <button onclick="copyKey()">Copy Key</button>
+  <span id="keyTick" class="tick">&#10004; Copied!</span>
+
   <textarea id="inputText" placeholder="Enter your text here..."></textarea><br>
 
   <button onclick="transform('encrypt')">Encrypt</button>
   <button onclick="transform('decrypt')">Decrypt</button>
+  <button onclick="resetFields()">Reset</button>
 
   <h3>Result:</h3>
   <div id="output">Your result will appear here...</div>
@@ -127,11 +132,49 @@
         .then(() => {
           const tick = document.getElementById("copyTick");
           tick.classList.add("show");
-          setTimeout(() => {
-            tick.classList.remove("show");
-          }, 1500);
+          setTimeout(() => tick.classList.remove("show"), 1500);
         })
         .catch(() => alert("Failed to copy result."));
+    }
+
+    function generateKey() {
+      const existingKey = document.getElementById("keyInput").value;
+      if (existingKey.trim() !== "") {
+        const confirmRegenerate = confirm("A key already exists. Do you want to generate a new one?");
+        if (!confirmRegenerate) return;
+      }
+
+      const array = new Uint8Array(32);
+      window.crypto.getRandomValues(array);
+      const key = btoa(String.fromCharCode.apply(null, array))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .substring(0, 43) + "=";
+
+      document.getElementById("keyInput").value = key;
+    }
+
+    function copyKey() {
+      const key = document.getElementById("keyInput").value;
+      if (!key) {
+        alert("No key to copy!");
+        return;
+      }
+      navigator.clipboard.writeText(key)
+        .then(() => {
+          const tick = document.getElementById("keyTick");
+          tick.classList.add("show");
+          setTimeout(() => tick.classList.remove("show"), 1500);
+        })
+        .catch(() => alert("Failed to copy key."));
+    }
+
+    function resetFields() {
+      document.getElementById("keyInput").value = "";
+      document.getElementById("inputText").value = "";
+      document.getElementById("output").textContent = "Your result will appear here...";
+      document.getElementById("copyTick").classList.remove("show");
+      document.getElementById("keyTick").classList.remove("show");
     }
   </script>
 
